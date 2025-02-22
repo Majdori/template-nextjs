@@ -46,11 +46,37 @@ services:
       context: .
     ports:
       - '${PROJECT_PORT:-3000}:3000'
-    # environment:
-    #   DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
     #   MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
     #   MINIO_SECRET_ACCESS: ${MINIO_SECRET_KEY}
     #   MINIO_BUCKET: ${MINIO_BUCKET}
     #   MINIO_ENDPOINT: http://minio:9000
     labels:
       - traefik.enable=true
+
+  ############
+  # DATABASE #
+  ############
+
+  postgres:
+    container_name: database
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - ${POSTGRES_VOLUME}:/var/lib/postgresql/data
+
+  nocodb:
+    container_name: database-admin
+    image: nocodb/nocodb:latest
+    restart: always
+    environment:
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@database:5432/${POSTGRES_DB}
+    volumes:
+      - ${NOCODB_VOLUME}:/usr/app/data
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`db.${PROJECT_NAME}.majdori.xyz`)
