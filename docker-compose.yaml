@@ -98,12 +98,14 @@ services:
     command: server /data
     volumes:
       - ${MINIO_VOLUME}:/data
+    ports:
+      - '9000:9000'
+      - '40411:40411'
     labels:
       - traefik.enable=true
       - traefik.http.routers.minio.rule=Host(`s3.${PROJECT_NAME}.majdori.xyz`)
       - traefik.http.routers.minio.entrypoints=https
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
-      - traefik.http.services.minio.loadbalancer.server.port=40411
 
   minio-init:
     container_name: object-storage-init
