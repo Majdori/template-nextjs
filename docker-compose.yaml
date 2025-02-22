@@ -1,0 +1,56 @@
+services:
+  #################
+  # REVERSE PROXY #
+  #################
+
+  traefik:
+    container_name: proxy
+    image: traefik:v3
+    command:
+      - '--api.insecure=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.defaultRule=Host(`{{ normalize .ContainerName }}.majdori.xyz`)'
+      - '--entryPoints.http.address=:80'
+      - '--entryPoints.http.http.redirections.entryPoint.to=https'
+      - '--entryPoints.http.http.redirections.entryPoint.scheme=https'
+      - '--entryPoints.https.address=:443'
+      - '--entryPoints.https.http.tls.certResolver=letsencrypt'
+      - '--entryPoints.https.http.tls.domains[0].main=majdori.xyz'
+      - '--entryPoints.https.http.tls.domains[0].sans=*.majdori.xyz'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge=true'
+      - '--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare'
+      - '--certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_EMAIL}'
+      - '--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json'
+    environment:
+      - CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN:?}
+    ports:
+      - '80:80'
+      - '443:443'
+      - '8080:8080'
+    volumes:
+      - ${DATA_PATH}/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`proxy.${PROJECT_NAME}.majdori.xyz`)
+      - traefik.http.services.traefik.loadbalancer.server.port=8080
+
+  ####################
+  # PROJECT TEMPLATE #
+  ####################
+
+  project:
+    container_name: ${PROJECT_NAME}
+    build:
+      context: .
+    ports:
+      - '${PROJECT_PORT:-3000}:3000'
+    # environment:
+    #   DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+    #   MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+    #   MINIO_SECRET_ACCESS: ${MINIO_SECRET_KEY}
+    #   MINIO_BUCKET: ${MINIO_BUCKET}
+    #   MINIO_ENDPOINT: http://minio:9000
+    labels:
+      - traefik.enable=true
