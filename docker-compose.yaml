@@ -35,6 +35,8 @@ services:
       - traefik.enable=true
       - traefik.http.routers.traefik.rule=Host(`proxy.${PROJECT_NAME}.majdori.xyz`)
       - traefik.http.services.traefik.loadbalancer.server.port=8080
+      - traefik.http.routers.traefik.entrypoints=https
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
 
   ####################
   # PROJECT TEMPLATE #
@@ -79,4 +81,6 @@ services:
       - ${NOCODB_VOLUME}:/usr/app/data
     labels:
       - traefik.enable=true
-      - traefik.http.routers.traefik.rule=Host(`db.${PROJECT_NAME}.majdori.xyz`)
+      - traefik.http.routers.nocodb.rule=Host(`db.${PROJECT_NAME}.majdori.xyz`)
+      - traefik.http.routers.nocodb.entrypoints=https
+      - traefik.http.routers.nocodb.tls.certresolver=letsencrypt
