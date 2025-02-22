@@ -103,7 +103,7 @@ services:
       - traefik.http.routers.minio.rule=Host(`s3.${PROJECT_NAME}.majdori.xyz`)
       - traefik.http.routers.minio.entrypoints=https
       - traefik.http.routers.minio.tls.certresolver=letsencrypt
-      - traefik.http.services.traefik.loadbalancer.server.port=40411
+      - traefik.http.services.minio.loadbalancer.server.port=40411
 
   minio-init:
     container_name: object-storage-init
