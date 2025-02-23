@@ -58,8 +58,6 @@ services:
         condition: service_healthy
       log-manager:
         condition: service_healthy
-      proxy:
-        condition: service_started
     labels:
       - traefik.enable=true
 
