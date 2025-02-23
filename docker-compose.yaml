@@ -99,7 +99,11 @@ services:
     depends_on:
       - loki
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - ./grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - ./grafana/dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
     labels:
       - traefik.enable=true
       - traefik.http.routers.grafana.rule=Host(`logs.${PROJECT_NAME}.majdori.xyz`)
