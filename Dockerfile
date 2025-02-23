@@ -15,8 +15,8 @@ RUN pnpm install
 
 COPY . .
 
-COPY init.sh .
-RUN chmod +x init.sh
+COPY init.sh /init.sh
+RUN chmod +x /init.sh
 
 EXPOSE 3000
 
