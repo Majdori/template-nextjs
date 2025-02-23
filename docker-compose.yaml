@@ -50,6 +50,7 @@ services:
       - '${PROJECT_PORT:-3000}:3000'
     environment:
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}?schema=public
+      LOKI_URL: http://log-manager:3100
     labels:
       - traefik.enable=true
 
@@ -80,3 +81,27 @@ services:
       - traefik.http.routers.nocodb.rule=Host(`db.${PROJECT_NAME}.majdori.xyz`)
       - traefik.http.routers.nocodb.entrypoints=https
       - traefik.http.routers.nocodb.tls.certresolver=letsencrypt
+
+  ###########
+  # LOGGING #
+  ###########
+
+  loki:
+    container_name: log-manager
+    image: grafana/loki:latest
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki-config.yml:/etc/loki/loki-config.yml:ro
+
+  grafana:
+    container_name: log-viewer
+    image: grafana/grafana:latest
+    depends_on:
+      - loki
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`logs.${PROJECT_NAME}.majdori.xyz`)
+      - traefik.http.routers.grafana.entrypoints=https
+      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
