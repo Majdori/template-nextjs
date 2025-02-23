@@ -15,9 +15,11 @@ RUN pnpm install
 
 COPY . .
 
-COPY init.sh /init.sh
-RUN chmod +x /init.sh
+RUN pnpm dlx prisma migrate deploy
+RUN pnpm dlx prisma generate
+
+RUN pnpm run build
 
 EXPOSE 3000
 
-CMD ["./init.sh"]
+CMD ["pnpm", "run", "start"]
